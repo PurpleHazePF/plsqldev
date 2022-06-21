@@ -1,4 +1,4 @@
-import cx_Oracle, sys, configparser
+import cx_Oracle, sys, configparser, pprint
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QRadioButton, QButtonGroup, QLabel, \
     QMainWindow, QTableWidget, QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
@@ -23,7 +23,6 @@ class Example(QWidget):
         try:
             config.read("update.ini")
             tc = config.get("settings", "launch")
-            print(tc)
         except Exception:
             config.add_section('settings')
             config.set("settings", "launch", "pass")
@@ -103,7 +102,7 @@ class Example(QWidget):
         x = 0
         z = ["SELECT", "UPDATE", "INSERT", "DELETE", "СВОЙ SQL СКРИПТ"]
         self.cmdlist = []
-        for i in range(5):
+        for i in range(4):
             cmd = QPushButton(self)
             cmd.setGeometry(QtCore.QRect(100, 100 + x, 300, 60))
             cmd.setText(z[i])
@@ -116,8 +115,9 @@ class Example(QWidget):
         self.congrats.setFont(font2)
         #command's_scripts
 
-
-        #SELECT
+        ########
+        #SELECT#
+        ########
         x = 0
         selectguide = ['таблица', 'колонки (через запятую)', "условия", "сортировка"]
         self.selectgroup = []
@@ -138,32 +138,16 @@ class Example(QWidget):
         self.search.setText("ПОИСК")
         self.search.setFont(font1)
         self.selectgroup.append(self.search)
-        print(self.selectgroup)
-        self.search.clicked.connect(self.SELECTBUTTON)
         #TABLE
         table = QTableWidget(self)  # Create a table
-        table.setColumnCount(3)  # Set three columns
-        table.setRowCount(3)  # and one row
 
-        # Set the table headers
-        table.setHorizontalHeaderLabels(["Header 1", "Header 2", "Header 3"])
         table.resize(700, 400)
         table.move(0, 200)
 
         # Set the tooltips to headings
-        table.horizontalHeaderItem(0).setToolTip("Column 1 ")
-        table.horizontalHeaderItem(1).setToolTip("Column 2 ")
-        table.horizontalHeaderItem(2).setToolTip("Column 3 ")
-
         # Set the alignment to the headers
-        table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
-        table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignHCenter)
-        table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignRight)
 
         # Fill the first line
-        table.setItem(0, 0, QTableWidgetItem("Text in column 1"))
-        table.setItem(0, 1, QTableWidgetItem("Text in column 2"))
-        table.setItem(0, 2, QTableWidgetItem("Text in column 3"))
 
         # Do the resize of the columns by content
         table.resizeColumnsToContents()
@@ -171,16 +155,103 @@ class Example(QWidget):
         for i in self.selectgroup:
             i.hide()
 
+        ########
+        #UPDATE#
+        ########
+        updateguide = ['таблица', 'колонка', "условия", "значение"]
+        self.updategroup = []
+        self.updatetexts = []
+        x = 0
+        for i in range(4):
+            dir = QLineEdit(self)
+            text = QLabel(self)
+            dir.move(0 + x, 70)
+            dir.resize(170, 30)
+            text.setText(updateguide[i])
+            text.move(0 + x, 55)
+            self.updatetexts.append(dir)
+            self.updategroup.append(dir)
+            self.updategroup.append(text)
+            x += 175
+        self.UPDATE = QPushButton(self)
+        self.UPDATE.setGeometry(QtCore.QRect(450, 100, 200, 60))
+        self.UPDATE.setText("ОБНОВИТЬ")
+        self.UPDATE.setFont(font1)
+        self.updategroup.append(self.UPDATE)
+        self.UPDATE.clicked.connect(self.UPDATEBUTTON)
+        for i in self.updategroup:
+            i.hide()
 
 
 
+        ########
+        #INSERT#
+        ########
+        insertguide = ['таблица', 'значения']
+        self.insertgroup = []
+        self.inserttexts = []
+        x = 0
+        for i in range(2):
+            dir = QLineEdit(self)
+            text = QLabel(self)
+            dir.move(0 + x, 70)
+            dir.resize(170, 30)
+            text.setText(insertguide[i])
+            text.move(0 + x, 55)
+            self.inserttexts.append(dir)
+            self.insertgroup.append(dir)
+            self.insertgroup.append(text)
+            x += 175
+        self.insertb = QPushButton(self)
+        self.insertb.setGeometry(QtCore.QRect(450, 100, 200, 60))
+        self.insertb.setText("ВСТАВИТЬ")
+        self.insertb.setFont(font1)
+        self.insertgroup.append(self.insertb)
+        self.insertb.clicked.connect(self.INSERTBUTTON)
+        for i in self.insertgroup:
+            i.hide()
 
+        ########
+        #DELETE#
+        ########
+        deleteguide = ['таблица', 'условие']
+        self.deletegroup = []
+        self.deletetexts = []
+        x = 0
+        for i in range(2):
+            dir = QLineEdit(self)
+            text = QLabel(self)
+            dir.move(0 + x, 70)
+            dir.resize(170, 30)
+            text.setText(deleteguide[i])
+            text.move(0 + x, 55)
+            self.deletetexts.append(dir)
+            self.deletegroup.append(dir)
+            self.deletegroup.append(text)
+            x += 175
+        self.deleteb = QPushButton(self)
+        self.deleteb.setGeometry(QtCore.QRect(450, 100, 200, 60))
+        self.deleteb.setText("УДАЛИТЬ")
+        self.deleteb.setFont(font1)
+        self.deletegroup.append(self.deleteb)
+        self.deleteb.clicked.connect(self.DELETEBUTTON)
+        for i in self.deletegroup:
+            i.hide()
+
+        self.otkat = QPushButton(self)
+        self.otkat.setGeometry(QtCore.QRect(10, 10, 40, 40))
+        self.otkat.setText("←")
+        self.otkat.setFont(font2)
+        self.otkat.hide()
 
         self.show()
         self.exit.clicked.connect(self.sysexit)
         self.startBtn.clicked.connect(self.startfunk)
         self.test_instant.clicked.connect(self.testinstant)
         self.cmdlist[0].clicked.connect(self.selectbtn)
+        self.cmdlist[1].clicked.connect(self.updatebtn)
+        self.cmdlist[2].clicked.connect(self.insertbtn)
+        self.cmdlist[3].clicked.connect(self.deletebtn)
         self.startobjects = [self.plsql, self.startBtn, self.exit]
         self.test_instant_objects = [self.test_instant, self.dir, self.ins]
         self.connect_status = False
@@ -205,6 +276,14 @@ class Example(QWidget):
     def sysexit(self):
         sys.exit()
 
+    def otkat(self):
+        a = [self.selectgroup, self.updategroup, self.insertgroup, self.deletegroup]
+        for i in a:
+            for j in i:
+                j.hide()
+        for i in self.cmdlist:
+            i.show()
+
     def startfunk(self):
         for i in self.startobjects:
             i.hide()
@@ -214,15 +293,12 @@ class Example(QWidget):
     def testinstant(self):
         a = "\i"[0]
         newdir = self.dir.text().replace('/', a)
-        print(newdir)
         self.connect(newdir)
-        print(self.connect_status)
         if self.connect_status:
             self.config.set("settings", "dir", newdir)
             self.config.set("settings", "instantg", "y")
             file = open("update.ini", mode="w")
             self.config.write(file)
-            print('вы молодец!!!')
             for i in self.test_instant_objects:
                 i.hide()
             for i in self.con_date:
@@ -231,7 +307,6 @@ class Example(QWidget):
             b = [self.config.get('settings', 'lastuser'), self.config.get('settings', 'lasthost'),
                  self.config.get('settings', 'lastport'),
                  self.config.get('settings', 'lastsid')]
-            print(b)
             self.texts[0].setText(b[0])
             self.texts[2].setText(b[1])
             self.texts[3].setText(b[2])
@@ -272,7 +347,6 @@ class Example(QWidget):
                 cmd += f" WHERE {where}"
             if order:
                 cmd += f" ORDER by {order}"
-            print(cmd)
             self.cursor.execute(cmd)
             a = self.cursor.fetchall()
             return a
@@ -280,13 +354,87 @@ class Example(QWidget):
             return e
 
     def SELECTBUTTON(self):
-        print(self.SELECT(self.selecttexts[0].text(), self.selecttexts[1].text(), self.selecttexts[2].text(), self.selecttexts[3].text()))
+        values = self.SELECT(self.selecttexts[0].text(), self.selecttexts[1].text(), self.selecttexts[2].text(), self.selecttexts[3].text())
         table = self.selectgroup[-1]
-        table.setColumnCount(4)  # Set three columns
-        table.setRowCount(4)
-        table.setHorizontalHeaderLabels(["Header 1", "Header 2", "Header 3", "очко"])
+        column_names = self.cursor.execute(f"""SELECT column_name
+FROM USER_TAB_COLUMNS
+WHERE table_name = '{self.selecttexts[0].text().upper()}'""")
+        a = []
+        for i in column_names.fetchall():
+            a.append(i[0])
+
+        table.setColumnCount(len(values[0]))  # Set three columns
+        table.setRowCount(len(values))
+        table.setHorizontalHeaderLabels(a)
+        ii = len(values)
+        jj = len(values[0])
+        table.setItem(0, 0, QTableWidgetItem('1'))
+        table.setItem(0, 2, QTableWidgetItem('2'))
+        for i in range(ii):
+            for j in range(jj):
+                table.setItem(i, j, QTableWidgetItem(str(values[i][j])))
+                # QTableWidgetItem(values[i][j])"""
+
+    def updatebtn(self):
+        for i in self.cmdlist:
+            i.hide()
+        self.congrats.setText("")
+        for i in self.updategroup:
+            i.show()
+
+    def UPDATE1(self, table, column, where, value):
+        self.cursor.execute(f"""UPDATE {table}
+SET {str(column)} = {str(value)}
+WHERE {str(where)}""")
+        self.db.commit()
 
 
+    def UPDATEBUTTON(self):
+        try:
+            self.UPDATE1(self.updatetexts[0].text(), self.updatetexts[1].text(), self.updatetexts[2].text(), self.updatetexts[3].text())
+            print(1)
+        except Exception:
+            print(2)
+
+    def insertbtn(self):
+        for i in self.cmdlist:
+            i.hide()
+        self.congrats.setText("")
+        for i in self.insertgroup:
+            i.show()
+
+    def insert(self, table, values):
+        self.cursor.execute(f"""insert into {table} values ({values})""")
+        self.db.commit()
+
+    def INSERTBUTTON(self):
+        try:
+            self.insert(self.inserttexts[0].text(), self.inserttexts[1].text())
+            print(1)
+        except Exception:
+            print(2)
+
+    def deletebtn(self):
+        for i in self.cmdlist:
+            i.hide()
+        self.congrats.setText("")
+        for i in self.deletegroup:
+            i.show()
+
+    def delete1(self, table, where):
+        self.cursor.execute(f"""DELETE FROM {table}
+            WHERE {where}""")
+        self.db.commit()
+
+    def DELETEBUTTON(self):
+        try:
+            self.delete1(self.deletetexts[0].text(), self.deletetexts[1].text())
+            print(1)
+        except Exception as e:
+            print(e)
+
+    def defolt(self):
+        print('test')
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Example()
@@ -294,27 +442,13 @@ if __name__ == '__main__':
 
 
 
-def update(column, value, where):
-    cursor.execute(f"""UPDATE ES
-SET {str(column)} = {str(value)}
-WHERE {str(where)}""")
-    db.commit()
 
 
-def insert(table, number, name, value):
-    cursor.execute(f"""insert into {table} values ({str(number)},'{name}',{str(value)})""")
-    db.commit()
 
 
-def delete(table, where):
-    cursor.execute(f"""DELETE FROM {table}
-    WHERE {where}""")
-    db.commit()
+
 
 
 # update('salary', '500', 'salary < 10000')
 # insert("ES", 10, "churka", '10999')
 # delete("ES", "salary = 10999")
-
-cursor.close()
-db.close()
