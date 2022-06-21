@@ -152,6 +152,7 @@ class Example(QWidget):
         # Do the resize of the columns by content
         table.resizeColumnsToContents()
         self.selectgroup.append(table)
+        self.search.clicked.connect(self.SELECTBUTTON)
         for i in self.selectgroup:
             i.hide()
 
@@ -243,7 +244,7 @@ class Example(QWidget):
         self.otkat.setText("←")
         self.otkat.setFont(font2)
         self.otkat.hide()
-
+        self.otkat.clicked.connect(self.otkat1)
         self.show()
         self.exit.clicked.connect(self.sysexit)
         self.startBtn.clicked.connect(self.startfunk)
@@ -276,13 +277,15 @@ class Example(QWidget):
     def sysexit(self):
         sys.exit()
 
-    def otkat(self):
+    def otkat1(self):
         a = [self.selectgroup, self.updategroup, self.insertgroup, self.deletegroup]
         for i in a:
             for j in i:
                 j.hide()
         for i in self.cmdlist:
             i.show()
+        self.congrats.setText("")
+        self.otkat.hide()
 
     def startfunk(self):
         for i in self.startobjects:
@@ -339,6 +342,7 @@ class Example(QWidget):
         self.congrats.setText("")
         for i in self.selectgroup:
             i.show()
+        self.otkat.show()
 
     def SELECT(self, table, columns, where="", order=""):
         try:
@@ -362,7 +366,6 @@ WHERE table_name = '{self.selecttexts[0].text().upper()}'""")
         a = []
         for i in column_names.fetchall():
             a.append(i[0])
-
         table.setColumnCount(len(values[0]))  # Set three columns
         table.setRowCount(len(values))
         table.setHorizontalHeaderLabels(a)
@@ -370,6 +373,9 @@ WHERE table_name = '{self.selecttexts[0].text().upper()}'""")
         jj = len(values[0])
         table.setItem(0, 0, QTableWidgetItem('1'))
         table.setItem(0, 2, QTableWidgetItem('2'))
+        print(values)
+        print(table)
+        print(column_names)
         for i in range(ii):
             for j in range(jj):
                 table.setItem(i, j, QTableWidgetItem(str(values[i][j])))
@@ -381,6 +387,7 @@ WHERE table_name = '{self.selecttexts[0].text().upper()}'""")
         self.congrats.setText("")
         for i in self.updategroup:
             i.show()
+        self.otkat.show()
 
     def UPDATE1(self, table, column, where, value):
         self.cursor.execute(f"""UPDATE {table}
@@ -392,9 +399,9 @@ WHERE {str(where)}""")
     def UPDATEBUTTON(self):
         try:
             self.UPDATE1(self.updatetexts[0].text(), self.updatetexts[1].text(), self.updatetexts[2].text(), self.updatetexts[3].text())
-            print(1)
+            self.congrats.setText(f"вы успешно обновили таблицу {self.updatetexts[0].text()}")
         except Exception:
-            print(2)
+            self.congrats.setText(f"ошибка обновления")
 
     def insertbtn(self):
         for i in self.cmdlist:
@@ -402,6 +409,7 @@ WHERE {str(where)}""")
         self.congrats.setText("")
         for i in self.insertgroup:
             i.show()
+        self.otkat.show()
 
     def insert(self, table, values):
         self.cursor.execute(f"""insert into {table} values ({values})""")
@@ -410,9 +418,9 @@ WHERE {str(where)}""")
     def INSERTBUTTON(self):
         try:
             self.insert(self.inserttexts[0].text(), self.inserttexts[1].text())
-            print(1)
+            self.congrats.setText(f"вы успешно добавили значение")
         except Exception:
-            print(2)
+            self.congrats.setText(f"ошибка добавления")
 
     def deletebtn(self):
         for i in self.cmdlist:
@@ -420,6 +428,7 @@ WHERE {str(where)}""")
         self.congrats.setText("")
         for i in self.deletegroup:
             i.show()
+        self.otkat.show()
 
     def delete1(self, table, where):
         self.cursor.execute(f"""DELETE FROM {table}
@@ -429,9 +438,9 @@ WHERE {str(where)}""")
     def DELETEBUTTON(self):
         try:
             self.delete1(self.deletetexts[0].text(), self.deletetexts[1].text())
-            print(1)
+            self.congrats.setText(f"вы успешно удалили значение")
         except Exception as e:
-            print(e)
+            self.congrats.setText(f"ошибка удаления")
 
     def defolt(self):
         print('test')
