@@ -1,8 +1,9 @@
-import cx_Oracle, sys, configparser, time
+import cx_Oracle, sys, configparser
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QRadioButton, QButtonGroup, QLabel, \
-    QMainWindow
+    QMainWindow, QTableWidget, QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import QSize, Qt
 
 
 def dd():
@@ -42,6 +43,8 @@ class Example(QWidget):
         self.startBtn.setGeometry(QtCore.QRect(200, 100, 300, 80))
         self.startBtn.setText("ВХОД")
         font1 = QtGui.QFont()
+        font2 = QtGui.QFont()
+        font2.setPointSize(12)
         font1.setPointSize(24)
         self.startBtn.setFont(font1)
         self.exit = QPushButton(self)
@@ -84,6 +87,7 @@ class Example(QWidget):
             self.con_date.append(dir)
             self.texts.append(dir)
             self.con_date.append(text)
+        self.texts[1].setEchoMode(QLineEdit.Password)
         self.dbcon = QPushButton(self)
         self.dbcon.setGeometry(QtCore.QRect(450, 420, 200, 60))
         self.dbcon.setText("CONNECT")
@@ -98,17 +102,85 @@ class Example(QWidget):
             i.hide()
         x = 0
         z = ["SELECT", "UPDATE", "INSERT", "DELETE", "СВОЙ SQL СКРИПТ"]
+        self.cmdlist = []
         for i in range(5):
-            self.cmd = QPushButton(self)
-            self.cmd.setGeometry(QtCore.QRect(100, 100 + x, 300, 60))
-            self.cmd.setText(z[i])
-            self.cmd.setFont(font1)
+            cmd = QPushButton(self)
+            cmd.setGeometry(QtCore.QRect(100, 100 + x, 300, 60))
+            cmd.setText(z[i])
+            cmd.setFont(font1)
+            cmd.hide()
+            self.cmdlist.append(cmd)
             x += 70
-        self.congrats = self
+        self.congrats = QLabel(self)
+        self.congrats.setGeometry(QtCore.QRect(200, 20, 300, 60))
+        self.congrats.setFont(font2)
+        #command's_scripts
+
+
+        #SELECT
+        x = 0
+        selectguide = ['таблица', 'колонки (через запятую)', "условия", "сортировка"]
+        self.selectgroup = []
+        self.selecttexts = []
+        for i in range(4):
+            dir = QLineEdit(self)
+            text = QLabel(self)
+            dir.move(0 + x, 70)
+            dir.resize(170, 30)
+            text.setText(selectguide[i])
+            text.move(0 + x, 55)
+            self.selecttexts.append(dir)
+            self.selectgroup.append(dir)
+            self.selectgroup.append(text)
+            x += 175
+        self.search = QPushButton(self)
+        self.search.setGeometry(QtCore.QRect(450, 100, 200, 60))
+        self.search.setText("ПОИСК")
+        self.search.setFont(font1)
+        self.selectgroup.append(self.search)
+        print(self.selectgroup)
+        self.search.clicked.connect(self.SELECTBUTTON)
+        #TABLE
+        table = QTableWidget(self)  # Create a table
+        table.setColumnCount(3)  # Set three columns
+        table.setRowCount(3)  # and one row
+
+        # Set the table headers
+        table.setHorizontalHeaderLabels(["Header 1", "Header 2", "Header 3"])
+        table.resize(700, 400)
+        table.move(0, 200)
+
+        # Set the tooltips to headings
+        table.horizontalHeaderItem(0).setToolTip("Column 1 ")
+        table.horizontalHeaderItem(1).setToolTip("Column 2 ")
+        table.horizontalHeaderItem(2).setToolTip("Column 3 ")
+
+        # Set the alignment to the headers
+        table.horizontalHeaderItem(0).setTextAlignment(Qt.AlignLeft)
+        table.horizontalHeaderItem(1).setTextAlignment(Qt.AlignHCenter)
+        table.horizontalHeaderItem(2).setTextAlignment(Qt.AlignRight)
+
+        # Fill the first line
+        table.setItem(0, 0, QTableWidgetItem("Text in column 1"))
+        table.setItem(0, 1, QTableWidgetItem("Text in column 2"))
+        table.setItem(0, 2, QTableWidgetItem("Text in column 3"))
+
+        # Do the resize of the columns by content
+        table.resizeColumnsToContents()
+        self.selectgroup.append(table)
+        for i in self.selectgroup:
+            i.hide()
+
+
+
+
+
+
         self.show()
         self.exit.clicked.connect(self.sysexit)
         self.startBtn.clicked.connect(self.startfunk)
         self.test_instant.clicked.connect(self.testinstant)
+        self.cmdlist[0].clicked.connect(self.selectbtn)
         self.startobjects = [self.plsql, self.startBtn, self.exit]
         self.test_instant_objects = [self.test_instant, self.dir, self.ins]
         self.connect_status = False
@@ -173,18 +245,46 @@ class Example(QWidget):
         file = open("update.ini", mode="w")
         self.config.write(file)
         try:
-            db = cx_Oracle.connect(self.texts[0].text(), self.texts[1].text(),
+            self.db = cx_Oracle.connect(self.texts[0].text(), self.texts[1].text(),
                                    f'{self.texts[2].text()}:{self.texts[3].text()}/{self.texts[4].text()}')
-            cursor = db.cursor()
+            self.cursor = self.db.cursor()
             for i in self.con_date:
                 i.hide()
-            cursor.execute("SELECT * FROM ES")
-            a = cursor.fetchall()
-            for i in a:
-                print(i)
+            for i in self.cmdlist:
+                i.show()
+            self.congrats.setText(f"""вы успешно подключились
+            к базе {self.texts[4].text()}""")
         except Exception as e:
             self.no.show()
             self.no.setText("неверные данные")
+
+    def selectbtn(self):
+        for i in self.cmdlist:
+            i.hide()
+        self.congrats.setText("")
+        for i in self.selectgroup:
+            i.show()
+
+    def SELECT(self, table, columns, where="", order=""):
+        try:
+            cmd = f"SELECT {columns} FROM {table}"
+            if where:
+                cmd += f" WHERE {where}"
+            if order:
+                cmd += f" ORDER by {order}"
+            print(cmd)
+            self.cursor.execute(cmd)
+            a = self.cursor.fetchall()
+            return a
+        except Exception as e:
+            return e
+
+    def SELECTBUTTON(self):
+        print(self.SELECT(self.selecttexts[0].text(), self.selecttexts[1].text(), self.selecttexts[2].text(), self.selecttexts[3].text()))
+        table = self.selectgroup[-1]
+        table.setColumnCount(4)  # Set three columns
+        table.setRowCount(4)
+        table.setHorizontalHeaderLabels(["Header 1", "Header 2", "Header 3", "очко"])
 
 
 if __name__ == '__main__':
