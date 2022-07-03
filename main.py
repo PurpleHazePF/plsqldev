@@ -1,7 +1,7 @@
-import cx_Oracle, sys, configparser, pprint
+import cx_Oracle, sys, configparser, csv
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QRadioButton, QButtonGroup, QLabel, \
-    QMainWindow, QTableWidget, QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem
+    QMainWindow, QTableWidget, QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem, QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt
 
@@ -180,6 +180,11 @@ class Example(QWidget):
         self.UPDATE.setFont(font1)
         self.updategroup.append(self.UPDATE)
         self.UPDATE.clicked.connect(self.UPDATEBUTTON)
+        self.dc = QPushButton(self)
+        self.dc.setGeometry(QtCore.QRect(10, 100, 90, 40))
+        self.dc.setText("загрузить csv")
+        self.updategroup.append(self.dc)
+        self.dc.clicked.connect(self.csv_download)
         for i in self.updategroup:
             i.hide()
 
@@ -402,6 +407,31 @@ WHERE {str(where)}""")
             self.congrats.setText(f"вы успешно обновили таблицу {self.updatetexts[0].text()}")
         except Exception:
             self.congrats.setText(f"ошибка обновления")
+
+    def REWRITE(self, values):
+        try:
+            self.insert(self.updatetexts[0].text(), ", ".join(values[0]))
+            self.cursor.execute(f"""DELETE FROM {self.updatetexts[0].text()}""")
+            self.db.commit()
+            for i in values:
+                self.insert(self.updatetexts[0].text(), ", ".join(i))
+            self.congrats.setText(f"вы успешно обновили таблицу {self.updatetexts[0].text()}")
+
+        except Exception as x:
+            print(x)
+            print(", ".join(values[0]))
+            self.congrats.setText(f"ошибка формата")
+
+    def csv_download(self):
+        wb_patch = QFileDialog.getOpenFileName()[0]
+        with open(str(wb_patch), 'r', newline='') as csvfile:
+            spamreader = csv.reader(csvfile)
+            base = []
+            for row in spamreader:
+                predbase = []
+                predbase.extend(row)
+                base.append(predbase)
+            self.REWRITE(base)
 
     def insertbtn(self):
         for i in self.cmdlist:
