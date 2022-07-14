@@ -1,7 +1,8 @@
 import cx_Oracle, sys, configparser, csv
 from PyQt5 import QtGui, QtCore
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QLineEdit, QRadioButton, QButtonGroup, QLabel, \
-    QMainWindow, QTableWidget, QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem, QFileDialog
+    QMainWindow, QTableWidget, QApplication, QMainWindow, QGridLayout, QWidget, QTableWidget, QTableWidgetItem, \
+    QFileDialog
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import QSize, Qt
 
@@ -113,10 +114,10 @@ class Example(QWidget):
         self.congrats = QLabel(self)
         self.congrats.setGeometry(QtCore.QRect(200, 20, 300, 60))
         self.congrats.setFont(font2)
-        #command's_scripts
+        # command's_scripts
 
         ########
-        #SELECT#
+        # SELECT#
         ########
         x = 0
         selectguide = ['таблица', 'колонки (через запятую)', "условия", "сортировка"]
@@ -138,7 +139,7 @@ class Example(QWidget):
         self.search.setText("ПОИСК")
         self.search.setFont(font1)
         self.selectgroup.append(self.search)
-        #TABLE
+        # TABLE
         table = QTableWidget(self)  # Create a table
 
         table.resize(700, 400)
@@ -157,7 +158,7 @@ class Example(QWidget):
             i.hide()
 
         ########
-        #UPDATE#
+        # UPDATE#
         ########
         updateguide = ['таблица', 'колонка', "условия", "значение"]
         self.updategroup = []
@@ -188,10 +189,8 @@ class Example(QWidget):
         for i in self.updategroup:
             i.hide()
 
-
-
         ########
-        #INSERT#
+        # INSERT#
         ########
         insertguide = ['таблица', 'значения']
         self.insertgroup = []
@@ -218,7 +217,7 @@ class Example(QWidget):
             i.hide()
 
         ########
-        #DELETE#
+        # DELETE#
         ########
         deleteguide = ['таблица', 'условие']
         self.deletegroup = []
@@ -329,7 +328,7 @@ class Example(QWidget):
         self.config.write(file)
         try:
             self.db = cx_Oracle.connect(self.texts[0].text(), self.texts[1].text(),
-                                   f'{self.texts[2].text()}:{self.texts[3].text()}/{self.texts[4].text()}')
+                                        f'{self.texts[2].text()}:{self.texts[3].text()}/{self.texts[4].text()}')
             self.cursor = self.db.cursor()
             for i in self.con_date:
                 i.hide()
@@ -363,7 +362,8 @@ class Example(QWidget):
             return e
 
     def SELECTBUTTON(self):
-        values = self.SELECT(self.selecttexts[0].text(), self.selecttexts[1].text(), self.selecttexts[2].text(), self.selecttexts[3].text())
+        values = self.SELECT(self.selecttexts[0].text(), self.selecttexts[1].text(), self.selecttexts[2].text(),
+                             self.selecttexts[3].text())
         table = self.selectgroup[-1]
         column_names = self.cursor.execute(f"""SELECT column_name
 FROM USER_TAB_COLUMNS
@@ -400,10 +400,10 @@ SET {str(column)} = {str(value)}
 WHERE {str(where)}""")
         self.db.commit()
 
-
     def UPDATEBUTTON(self):
         try:
-            self.UPDATE1(self.updatetexts[0].text(), self.updatetexts[1].text(), self.updatetexts[2].text(), self.updatetexts[3].text())
+            self.UPDATE1(self.updatetexts[0].text(), self.updatetexts[1].text(), self.updatetexts[2].text(),
+                         self.updatetexts[3].text())
             self.congrats.setText(f"вы успешно обновили таблицу {self.updatetexts[0].text()}")
         except Exception:
             self.congrats.setText(f"ошибка обновления")
@@ -424,13 +424,25 @@ WHERE {str(where)}""")
 
     def csv_download(self):
         wb_patch = QFileDialog.getOpenFileName()[0]
+        self.cursor.execute(f"""SELECT data_type
+                        FROM USER_TAB_COLUMNS
+                        WHERE table_name = '{self.updatetexts[0].text().upper()}'""")
+        b = self.cursor.fetchall()
         with open(str(wb_patch), 'r', newline='') as csvfile:
-            spamreader = csv.reader(csvfile)
-            base = []
-            for row in spamreader:
-                predbase = []
-                predbase.extend(row)
-                base.append(predbase)
+            try:
+                spamreader = csv.reader(csvfile)
+                base = []
+                for row in spamreader:
+                    predbase = []
+                    for i in range(len(row)):
+                        a = row[i]
+                        if b[i][0] == "VARCHAR2""":
+                            a = f"'{a}'"
+                        predbase.append(a)
+                    base.append(predbase)
+                print(base)
+            except Exception as x:
+                print(x)
             self.REWRITE(base)
 
     def insertbtn(self):
@@ -474,19 +486,12 @@ WHERE {str(where)}""")
 
     def defolt(self):
         print('test')
+
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = Example()
     sys.exit(app.exec_())
-
-
-
-
-
-
-
-
-
 
 # update('salary', '500', 'salary < 10000')
 # insert("ES", 10, "churka", '10999')
